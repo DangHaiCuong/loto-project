@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loto Cho Hội Bạn</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎲 Loto Cho Hội Bạn</h1>
+            <p class="subtitle">Chơi loto cùng nhau, không cần app phức tạp!</p>
+        </header>
+
+        <!-- Chọn chế độ -->
+        <div id="mode-selection" class="mode-selection">
+            <h2>Chọn chế độ chơi:</h2>
+            <div class="mode-buttons">
+                <button class="mode-btn host-btn" onclick="selectMode('host')">
+                    <span class="icon">🎯</span>
+                    <span class="text">Host (Quản trò)</span>
+                    <span class="desc">Quay số và điều khiển trò chơi</span>
+                </button>
+                <button class="mode-btn player-btn" onclick="selectMode('player')">
+                    <span class="icon">🎮</span>
+                    <span class="text">Người chơi</span>
+                    <span class="desc">Nhận bảng số và đánh dấu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chế độ Host -->
+        <div id="host-mode" class="game-mode" style="display: none;">
+            <div class="mode-header">
+                <h2>🎯 Chế độ Host</h2>
+                <button class="back-btn" onclick="backToModeSelection()">← Quay lại</button>
+            </div>
+
+            <div class="host-controls">
+                <div class="game-settings" id="game-settings">
+                    <h3>Cài đặt trò chơi</h3>
+                    <div class="setting-group">
+                        <label>Số lượng số (từ 1 đến):</label>
+                        <select id="number-range">
+                            <option value="75">75 (Kiểu Mỹ)</option>
+                            <option value="90" selected>90 (Kiểu Ý)</option>
+                        </select>
+                    </div>
+                    <button class="primary-btn" onclick="startGame()">Bắt đầu chơi</button>
+                </div>
+
+                <div class="game-active" id="game-active" style="display: none;">
+                    <div class="current-number-display">
+                        <div class="label">Số vừa quay:</div>
+                        <div class="current-number" id="current-number">-</div>
+                        <div class="remaining">Còn lại: <span id="remaining-count">0</span> số</div>
+                    </div>
+
+                    <button class="primary-btn draw-btn" id="draw-btn" onclick="drawNumber()">
+                        Quay số tiếp
+                    </button>
+
+                    <button class="secondary-btn" onclick="resetGame()">Chơi lại từ đầu</button>
+
+                    <div class="drawn-numbers">
+                        <h3>Lịch sử các số đã quay:</h3>
+                        <div id="drawn-list" class="number-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chế độ Người chơi -->
+        <div id="player-mode" class="game-mode" style="display: none;">
+            <div class="mode-header">
+                <h2>🎮 Chế độ Người chơi</h2>
+                <button class="back-btn" onclick="backToModeSelection()">← Quay lại</button>
+            </div>
+
+            <div class="player-controls">
+                <div class="card-settings" id="card-settings">
+                    <h3>Tạo bảng số của bạn</h3>
+                    <div class="setting-group">
+                        <label>Loại bảng:</label>
+                        <select id="card-type">
+                            <option value="75">Bảng 5×5 (1-75)</option>
+                            <option value="90" selected>Bảng 3×9 (1-90)</option>
+                        </select>
+                    </div>
+                    <button class="primary-btn" onclick="generateCard()">Tạo bảng số</button>
+                </div>
+
+                <div class="player-card" id="player-card" style="display: none;">
+                    <div class="card-header">
+                        <h3>Bảng số của bạn</h3>
+                        <div class="card-actions">
+                            <button class="secondary-btn small" onclick="generateCard()">Tạo bảng mới</button>
+                            <button class="secondary-btn small" onclick="clearMarks()">Xóa đánh dấu</button>
+                        </div>
+                    </div>
+
+                    <div id="loto-card" class="loto-card"></div>
+
+                    <div class="marked-count">
+                        Đã đánh dấu: <span id="marked-count">0</span> số
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ for friends | <a href="https://github.com" target="_blank">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
