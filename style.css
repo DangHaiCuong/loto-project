@@ -491,11 +491,119 @@ header h1 {
     font-size: 1.2rem;
     color: var(--text-secondary);
     font-weight: 600;
+    margin-bottom: 20px;
 }
 
 .marked-count span {
     color: var(--primary-color);
     font-weight: bold;
+}
+
+/* Win Buttons */
+.win-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.cho-btn, .kinh-btn {
+    padding: 20px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.cho-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.cho-btn:hover {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.kinh-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.kinh-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.cho-btn:active, .kinh-btn:active {
+    transform: scale(0.95);
+}
+
+/* Notifications for Host */
+.notifications {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.notifications h3 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.notification-item {
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.notification-item.cho {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border-left: 4px solid #f59e0b;
+}
+
+.notification-item.kinh {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+    border-left: 4px solid #10b981;
+}
+
+.notification-item .player-name {
+    font-size: 1.1rem;
+}
+
+.notification-item .timestamp {
+    font-size: 0.85rem;
+    opacity: 0.7;
 }
 
 /* Footer */
@@ -559,6 +667,20 @@ footer a {
 
     .secondary-btn.small {
         width: 100%;
+    }
+
+    .win-buttons {
+        gap: 10px;
+    }
+
+    .cho-btn, .kinh-btn {
+        font-size: 1.1rem;
+        padding: 15px;
+    }
+
+    .room-code {
+        font-size: 2rem;
+        letter-spacing: 4px;
     }
 }
 

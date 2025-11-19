@@ -69,6 +69,11 @@
 
                     <button class="secondary-btn" onclick="resetGame()">Chơi lại từ đầu</button>
 
+                    <div class="notifications" id="notifications" style="display: none;">
+                        <h3>🔔 Thông báo từ người chơi:</h3>
+                        <div id="notification-list" class="notification-list"></div>
+                    </div>
+
                     <div class="drawn-numbers">
                         <h3>Lịch sử các số đã quay:</h3>
                         <div id="drawn-list" class="number-grid"></div>
@@ -113,6 +118,15 @@
 
                     <div class="marked-count">
                         Đã đánh dấu: <span id="marked-count">0</span> số
+                    </div>
+
+                    <div class="win-buttons">
+                        <button class="cho-btn" id="cho-btn" onclick="announceWaiting()">
+                            🔔 CHỜ
+                        </button>
+                        <button class="kinh-btn" id="kinh-btn" onclick="announceWin()">
+                            🏆 KINH!
+                        </button>
                     </div>
                 </div>
             </div>

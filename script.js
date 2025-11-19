@@ -7,7 +7,9 @@ let gameState = {
     drawnNumbers: [],
     playerCard: [],
     markedNumbers: [],
-    firebaseListener: null
+    firebaseListener: null,
+    notificationListener: null,
+    playerName: null
 };
 
 // ============ FIREBASE HELPERS ============
@@ -29,6 +31,15 @@ function checkFirebaseReady() {
     return true;
 }
 
+function generatePlayerName() {
+    const adjectives = ['Vui', 'Nhanh', 'May', 'Khéo', 'Giỏi', 'Thông', 'Lanh', 'Tinh'];
+    const nouns = ['Mắn', 'Tay', 'Lành', 'Ý', 'Trí', 'Khôn', 'Lợi'];
+    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const num = Math.floor(Math.random() * 100);
+    return `${adj}${noun}${num}`;
+}
+
 // ============ MODE SELECTION ============
 
 function selectMode(mode) {
@@ -43,9 +54,12 @@ function selectMode(mode) {
 }
 
 function backToModeSelection() {
-    // Clean up Firebase listener
+    // Clean up Firebase listeners
     if (gameState.firebaseListener) {
         gameState.firebaseListener();
+    }
+    if (gameState.notificationListener) {
+        gameState.notificationListener();
     }
 
     // Delete room if host
@@ -63,7 +77,9 @@ function backToModeSelection() {
         drawnNumbers: [],
         playerCard: [],
         markedNumbers: [],
-        firebaseListener: null
+        firebaseListener: null,
+        notificationListener: null,
+        playerName: null
     };
 
     // Hide all modes
@@ -115,6 +131,9 @@ function startGame() {
         status: 'active'
     });
 
+    // Listen to notifications
+    listenToNotifications();
+
     // Show game active screen
     document.getElementById('game-settings').style.display = 'none';
     document.getElementById('game-active').style.display = 'block';
@@ -122,6 +141,47 @@ function startGame() {
     document.getElementById('remaining-count').textContent = gameState.availableNumbers.length;
     document.getElementById('current-number').textContent = '-';
     document.getElementById('drawn-list').innerHTML = '';
+}
+
+function listenToNotifications() {
+    const notifRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}/notifications`);
+
+    gameState.notificationListener = window.firebaseOnValue(notifRef, (snapshot) => {
+        const notifications = snapshot.val();
+        const notifList = document.getElementById('notification-list');
+        notifList.innerHTML = '';
+
+        if (!notifications) {
+            document.getElementById('notifications').style.display = 'none';
+            return;
+        }
+
+        document.getElementById('notifications').style.display = 'block';
+
+        // Convert to array and sort by timestamp
+        const notifArray = Object.entries(notifications).map(([id, data]) => ({
+            id,
+            ...data
+        })).sort((a, b) => b.timestamp - a.timestamp);
+
+        notifArray.forEach(notif => {
+            const item = document.createElement('div');
+            item.className = `notification-item ${notif.type}`;
+
+            const playerName = document.createElement('span');
+            playerName.className = 'player-name';
+            playerName.textContent = `${notif.type === 'cho' ? '🔔 CHỜ' : '🏆 KINH'}: ${notif.playerName}`;
+
+            const timestamp = document.createElement('span');
+            timestamp.className = 'timestamp';
+            const date = new Date(notif.timestamp);
+            timestamp.textContent = date.toLocaleTimeString('vi-VN');
+
+            item.appendChild(playerName);
+            item.appendChild(timestamp);
+            notifList.appendChild(item);
+        });
+    });
 }
 
 function drawNumber() {
@@ -218,6 +278,7 @@ function joinRoom() {
         // Join room
         gameState.roomCode = roomCode;
         gameState.numberRange = roomData.numberRange;
+        gameState.playerName = generatePlayerName();
 
         // Generate player card
         generateCardForRoom();
@@ -232,6 +293,70 @@ function joinRoom() {
         document.getElementById('player-current-number').textContent = roomData.currentNumber || '-';
 
     }, { onlyOnce: true });
+}
+
+// ============ PLAYER ANNOUNCEMENT FUNCTIONS ============
+
+function announceWaiting() {
+    if (!gameState.roomCode || !gameState.playerName) {
+        alert('Bạn chưa tham gia phòng!');
+        return;
+    }
+
+    const notifRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}/notifications`);
+    const newNotif = window.firebasePush(notifRef);
+
+    window.firebaseSet(newNotif, {
+        type: 'cho',
+        playerName: gameState.playerName,
+        timestamp: Date.now()
+    });
+
+    // Visual feedback
+    const btn = document.getElementById('cho-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '✅ Đã gửi!';
+    btn.disabled = true;
+
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }, 2000);
+}
+
+function announceWin() {
+    if (!gameState.roomCode || !gameState.playerName) {
+        alert('Bạn chưa tham gia phòng!');
+        return;
+    }
+
+    if (confirm('Bạn chắc chắn đã thắng chưa? Host sẽ kiểm tra bảng của bạn!')) {
+        const notifRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}/notifications`);
+        const newNotif = window.firebasePush(notifRef);
+
+        window.firebaseSet(newNotif, {
+            type: 'kinh',
+            playerName: gameState.playerName,
+            timestamp: Date.now()
+        });
+
+        // Visual feedback
+        const btn = document.getElementById('kinh-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '🎉 Đã báo thắng!';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 3000);
+
+        // Celebration effect
+        document.body.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        setTimeout(() => {
+            document.body.style.background = '';
+        }, 1000);
+    }
 }
 
 function listenToRoomUpdates() {
