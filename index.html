@@ -79,11 +79,6 @@
 
                     <button class="secondary-btn" onclick="resetGame()">🔄 Chơi lại từ đầu</button>
 
-                    <!-- Thông báo từ người chơi -->
-                    <div class="notifications" id="notifications" style="display: none;">
-                        <h3>🔔 Thông báo từ người chơi</h3>
-                        <div id="notification-list" class="notification-list"></div>
-                    </div>
 
                     <!-- Lịch sử các số đã quay -->
                     <div class="drawn-numbers">
@@ -102,21 +97,19 @@
             </div>
 
             <div class="player-controls">
-                <div class="waiting-screen" id="waiting-screen">
-                    <div class="waiting-message">
-                        <div class="waiting-icon">⏳</div>
-                        <h3>Chờ quản trò bắt đầu...</h3>
-                        <p>Tờ vé của bạn sẽ hiện ra khi trò chơi bắt đầu</p>
+                <div class="card-settings" id="card-settings">
+                    <h3>Chọn loại bảng</h3>
+                    <div class="setting-group">
+                        <label>Loại loto:</label>
+                        <select id="player-card-type">
+                            <option value="75">Loto 75 số (1-75)</option>
+                            <option value="90" selected>Loto 90 số (1-90)</option>
+                        </select>
                     </div>
+                    <button class="primary-btn" onclick="generatePlayerCard()">🎫 Tạo bảng số</button>
                 </div>
 
                 <div class="player-card" id="player-card" style="display: none;">
-                    <!-- Số hiện tại từ máy quay -->
-                    <div class="current-number-display">
-                        <div class="current-label">Số vừa quay:</div>
-                        <div class="current-value" id="player-current-number">--</div>
-                    </div>
-
                     <!-- Tờ vé loto giấy trắng viền đỏ -->
                     <div class="loto-paper">
                         <div class="paper-header">
@@ -143,15 +136,6 @@
                         </button>
                     </div>
 
-                    <!-- Nút Chờ và Kinh -->
-                    <div class="win-buttons">
-                        <button class="cho-btn" id="cho-btn" onclick="announceWaiting()">
-                            🔔 CHỜ
-                        </button>
-                        <button class="kinh-btn" id="kinh-btn" onclick="announceWin()">
-                            🏆 KINH!
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -161,35 +145,6 @@
         </footer>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue, update, push, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
-        // Firebase configuration - REPLACE WITH YOUR CONFIG
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Make Firebase available globally
-        window.firebaseDB = database;
-        window.firebaseRef = ref;
-        window.firebaseSet = set;
-        window.firebaseOnValue = onValue;
-        window.firebaseUpdate = update;
-        window.firebasePush = push;
-        window.firebaseRemove = remove;
-    </script>
     <script src="script.js"></script>
 </body>
 </html>

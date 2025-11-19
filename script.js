@@ -5,33 +5,10 @@ let gameState = {
     availableNumbers: [],
     drawnNumbers: [],
     playerCard: [],
-    markedNumbers: [],
-    playerName: null,
-    gameListener: null,
-    notificationListener: null
+    markedNumbers: []
 };
 
-// Global game path in Firebase
-const GAME_PATH = 'game';
-
 // ============ UTILITY FUNCTIONS ============
-
-function checkFirebaseReady() {
-    if (!window.firebaseDB) {
-        alert('⚠️ Firebase chưa được cấu hình!\n\nVui lòng xem FIREBASE_SETUP.md để biết cách setup Firebase.');
-        return false;
-    }
-    return true;
-}
-
-function generatePlayerName() {
-    const adjectives = ['Vui', 'Nhanh', 'May', 'Khéo', 'Giỏi', 'Thông', 'Lanh', 'Tinh'];
-    const nouns = ['Mắn', 'Tay', 'Lành', 'Ý', 'Trí', 'Khôn', 'Lợi'];
-    const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    const num = Math.floor(Math.random() * 100);
-    return `${adj}${noun}${num}`;
-}
 
 function generateSerial() {
     return `VN-${Date.now().toString(36).toUpperCase()}`;
@@ -88,19 +65,10 @@ function selectMode(mode) {
         document.getElementById('host-mode').style.display = 'block';
     } else if (mode === 'player') {
         document.getElementById('player-mode').style.display = 'block';
-        listenToGame();
     }
 }
 
 function backToModeSelection() {
-    // Clean up listeners
-    if (gameState.gameListener) {
-        gameState.gameListener();
-    }
-    if (gameState.notificationListener) {
-        gameState.notificationListener();
-    }
-
     // Reset
     gameState = {
         mode: null,
@@ -108,10 +76,7 @@ function backToModeSelection() {
         availableNumbers: [],
         drawnNumbers: [],
         playerCard: [],
-        markedNumbers: [],
-        playerName: null,
-        gameListener: null,
-        notificationListener: null
+        markedNumbers: []
     };
 
     // Hide all modes
@@ -122,15 +87,13 @@ function backToModeSelection() {
     // Reset displays
     document.getElementById('game-settings').style.display = 'block';
     document.getElementById('game-active').style.display = 'none';
-    document.getElementById('waiting-screen').style.display = 'block';
+    document.getElementById('card-settings').style.display = 'block';
     document.getElementById('player-card').style.display = 'none';
 }
 
 // ============ HOST MODE ============
 
 function startGame() {
-    if (!checkFirebaseReady()) return;
-
     const range = parseInt(document.getElementById('number-range').value);
     gameState.numberRange = range;
     gameState.availableNumbers = [];
@@ -141,19 +104,6 @@ function startGame() {
         gameState.availableNumbers.push(i);
     }
     shuffleArray(gameState.availableNumbers);
-
-    // Create game in Firebase
-    const gameRef = window.firebaseRef(window.firebaseDB, GAME_PATH);
-    window.firebaseSet(gameRef, {
-        numberRange: range,
-        currentNumber: null,
-        drawnNumbers: [],
-        status: 'active',
-        createdAt: Date.now()
-    });
-
-    // Listen to notifications
-    listenToNotifications();
 
     // Show game screen
     document.getElementById('game-settings').style.display = 'none';
@@ -174,14 +124,6 @@ function drawNumber() {
 
     // Animate LED with rolling effect
     animateLED(number);
-
-    // Update Firebase
-    const gameRef = window.firebaseRef(window.firebaseDB, GAME_PATH);
-    window.firebaseUpdate(gameRef, {
-        currentNumber: number,
-        drawnNumbers: gameState.drawnNumbers,
-        lastUpdate: Date.now()
-    });
 
     // Update display
     document.getElementById('remaining-count').textContent = gameState.availableNumbers.length;
@@ -240,49 +182,8 @@ function updateDrawnNumbersList() {
     });
 }
 
-function listenToNotifications() {
-    const notifRef = window.firebaseRef(window.firebaseDB, `${GAME_PATH}/notifications`);
-
-    gameState.notificationListener = window.firebaseOnValue(notifRef, (snapshot) => {
-        const notifications = snapshot.val();
-        const notifList = document.getElementById('notification-list');
-        notifList.innerHTML = '';
-
-        if (!notifications) {
-            document.getElementById('notifications').style.display = 'none';
-            return;
-        }
-
-        document.getElementById('notifications').style.display = 'block';
-
-        const notifArray = Object.entries(notifications).map(([id, data]) => ({
-            id,
-            ...data
-        })).sort((a, b) => b.timestamp - a.timestamp);
-
-        notifArray.forEach(notif => {
-            const item = document.createElement('div');
-            item.className = `notification-item ${notif.type}`;
-
-            const playerName = document.createElement('span');
-            playerName.textContent = `${notif.type === 'cho' ? '🔔 CHỜ' : '🏆 KINH'}: ${notif.playerName}`;
-
-            const timestamp = document.createElement('span');
-            const date = new Date(notif.timestamp);
-            timestamp.textContent = date.toLocaleTimeString('vi-VN');
-
-            item.appendChild(playerName);
-            item.appendChild(timestamp);
-            notifList.appendChild(item);
-        });
-    });
-}
-
 function resetGame() {
-    if (confirm('Chơi lại từ đầu? Mọi người sẽ mất bảng hiện tại.')) {
-        const gameRef = window.firebaseRef(window.firebaseDB, GAME_PATH);
-        window.firebaseRemove(gameRef);
-
+    if (confirm('Chơi lại từ đầu?')) {
         document.getElementById('game-settings').style.display = 'block';
         document.getElementById('game-active').style.display = 'none';
         gameState.availableNumbers = [];
@@ -295,69 +196,36 @@ function resetGame() {
 
 // ============ PLAYER MODE ============
 
-function listenToGame() {
-    if (!checkFirebaseReady()) return;
-
-    const gameRef = window.firebaseRef(window.firebaseDB, GAME_PATH);
-
-    gameState.gameListener = window.firebaseOnValue(gameRef, (snapshot) => {
-        const gameData = snapshot.val();
-
-        if (!gameData || gameData.status !== 'active') {
-            // No game running
-            document.getElementById('waiting-screen').style.display = 'block';
-            document.getElementById('player-card').style.display = 'none';
-            return;
-        }
-
-        // Game is active
-        if (!gameState.playerCard.length) {
-            // Generate card first time
-            gameState.numberRange = gameData.numberRange;
-            gameState.playerName = generatePlayerName();
-            generateCardForRoom();
-
-            document.getElementById('waiting-screen').style.display = 'none';
-            document.getElementById('player-card').style.display = 'block';
-        }
-
-        // Update current number
-        if (gameData.currentNumber) {
-            document.getElementById('player-current-number').textContent = gameData.currentNumber;
-
-            // Flash if number is on card
-            if (gameState.playerCard.includes(gameData.currentNumber)) {
-                flashScreen();
-            }
-        }
-    });
-}
-
-function flashScreen() {
-    const body = document.body;
-    const originalBg = body.style.background;
-    body.style.background = 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)';
-    setTimeout(() => {
-        body.style.background = originalBg;
-    }, 300);
-}
-
-function generateCardForRoom() {
+function generatePlayerCard() {
+    const cardType = parseInt(document.getElementById('player-card-type').value);
+    gameState.numberRange = cardType;
     gameState.markedNumbers = [];
 
-    if (gameState.numberRange === 90) {
+    if (cardType === 90) {
         generateCard90();
-    } else if (gameState.numberRange === 75) {
+    } else if (cardType === 75) {
         generateCard75();
     }
 
     document.getElementById('card-serial').textContent = generateSerial();
+    document.getElementById('card-settings').style.display = 'none';
+    document.getElementById('player-card').style.display = 'block';
     updateMarkedCount();
 }
 
 function regenerateCard() {
     if (confirm('Đổi vé mới? Bạn sẽ mất các đánh dấu hiện tại.')) {
-        generateCardForRoom();
+        const cardType = gameState.numberRange;
+        gameState.markedNumbers = [];
+
+        if (cardType === 90) {
+            generateCard90();
+        } else if (cardType === 75) {
+            generateCard75();
+        }
+
+        document.getElementById('card-serial').textContent = generateSerial();
+        updateMarkedCount();
     }
 }
 
@@ -478,70 +346,6 @@ function clearMarks() {
 
 function updateMarkedCount() {
     document.getElementById('marked-count').textContent = gameState.markedNumbers.length;
-}
-
-// ============ ANNOUNCEMENTS ============
-
-function announceWaiting() {
-    if (!checkFirebaseReady()) return;
-    if (!gameState.playerName) {
-        alert('Chưa có trò chơi đang diễn ra!');
-        return;
-    }
-
-    const notifRef = window.firebaseRef(window.firebaseDB, `${GAME_PATH}/notifications`);
-    const newNotif = window.firebasePush(notifRef);
-
-    window.firebaseSet(newNotif, {
-        type: 'cho',
-        playerName: gameState.playerName,
-        timestamp: Date.now()
-    });
-
-    const btn = document.getElementById('cho-btn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '✅ Đã gửi!';
-    btn.disabled = true;
-
-    setTimeout(() => {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }, 2000);
-}
-
-function announceWin() {
-    if (!checkFirebaseReady()) return;
-    if (!gameState.playerName) {
-        alert('Chưa có trò chơi đang diễn ra!');
-        return;
-    }
-
-    if (confirm('Bạn chắc chắn đã thắng chưa? Quản trò sẽ kiểm tra!')) {
-        const notifRef = window.firebaseRef(window.firebaseDB, `${GAME_PATH}/notifications`);
-        const newNotif = window.firebasePush(notifRef);
-
-        window.firebaseSet(newNotif, {
-            type: 'kinh',
-            playerName: gameState.playerName,
-            timestamp: Date.now()
-        });
-
-        const btn = document.getElementById('kinh-btn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '🎉 Đã báo thắng!';
-        btn.disabled = true;
-
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }, 3000);
-
-        // Celebration
-        document.body.style.background = 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)';
-        setTimeout(() => {
-            document.body.style.background = '';
-        }, 1000);
-    }
 }
 
 // ============ KEYBOARD SHORTCUTS ============
