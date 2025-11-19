@@ -9,23 +9,23 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎲 Loto Cho Hội Bạn</h1>
+            <h1>🎰 Loto Cho Hội Bạn</h1>
             <p class="subtitle">Chơi loto cùng nhau - Realtime!</p>
         </header>
 
         <!-- Chọn chế độ -->
         <div id="mode-selection" class="mode-selection">
-            <h2>Chọn chế độ chơi:</h2>
+            <h2>Chọn chế độ:</h2>
             <div class="mode-buttons">
                 <button class="mode-btn host-btn" onclick="selectMode('host')">
                     <span class="icon">🎯</span>
-                    <span class="text">Host (Quản trò)</span>
-                    <span class="desc">Tạo phòng và quay số</span>
+                    <span class="text">Quản trò</span>
+                    <span class="desc">Điều khiển máy quay số</span>
                 </button>
                 <button class="mode-btn player-btn" onclick="selectMode('player')">
-                    <span class="icon">🎮</span>
+                    <span class="icon">🎫</span>
                     <span class="text">Người chơi</span>
-                    <span class="desc">Tham gia phòng với mã</span>
+                    <span class="desc">Nhận tờ vé loto</span>
                 </button>
             </div>
         </div>
@@ -33,49 +33,61 @@
         <!-- Chế độ Host -->
         <div id="host-mode" class="game-mode" style="display: none;">
             <div class="mode-header">
-                <h2>🎯 Chế độ Host</h2>
+                <h2>🎯 Máy Quay Số</h2>
                 <button class="back-btn" onclick="backToModeSelection()">← Quay lại</button>
             </div>
 
             <div class="host-controls">
                 <div class="game-settings" id="game-settings">
-                    <h3>Tạo phòng chơi</h3>
+                    <h3>Cài đặt trò chơi</h3>
                     <div class="setting-group">
-                        <label>Số lượng số (từ 1 đến):</label>
+                        <label>Loại loto:</label>
                         <select id="number-range">
-                            <option value="75">75 (Kiểu Mỹ)</option>
-                            <option value="90" selected>90 (Kiểu Ý)</option>
+                            <option value="75">Loto 75 số (1-75)</option>
+                            <option value="90" selected>Loto 90 số (1-90)</option>
                         </select>
                     </div>
-                    <button class="primary-btn" onclick="startGame()">Tạo phòng và bắt đầu</button>
+                    <button class="primary-btn" onclick="startGame()">🎰 Bắt đầu quay số</button>
                 </div>
 
                 <div class="game-active" id="game-active" style="display: none;">
-                    <div class="room-code-display">
-                        <div class="room-code-label">Mã phòng:</div>
-                        <div class="room-code" id="room-code">------</div>
-                        <div class="room-code-help">Chia sẻ mã này cho người chơi</div>
+                    <!-- Máy quay số LED -->
+                    <div class="slot-machine">
+                        <div class="slot-display">
+                            <div class="led-frame">
+                                <div class="led-number" id="led-tens">0</div>
+                                <div class="led-number" id="led-ones">0</div>
+                            </div>
+                            <div class="machine-label">SỐ VỪA QUAY</div>
+                        </div>
                     </div>
 
-                    <div class="current-number-display">
-                        <div class="label">Số vừa quay:</div>
-                        <div class="current-number" id="current-number">-</div>
-                        <div class="remaining">Còn lại: <span id="remaining-count">0</span> số</div>
+                    <div class="game-info">
+                        <div class="info-item">
+                            <span class="info-label">Đã quay:</span>
+                            <span class="info-value" id="drawn-count">0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Còn lại:</span>
+                            <span class="info-value" id="remaining-count">90</span>
+                        </div>
                     </div>
 
                     <button class="primary-btn draw-btn" id="draw-btn" onclick="drawNumber()">
-                        Quay số tiếp
+                        🎲 Quay số tiếp
                     </button>
 
-                    <button class="secondary-btn" onclick="resetGame()">Chơi lại từ đầu</button>
+                    <button class="secondary-btn" onclick="resetGame()">🔄 Chơi lại từ đầu</button>
 
+                    <!-- Thông báo từ người chơi -->
                     <div class="notifications" id="notifications" style="display: none;">
-                        <h3>🔔 Thông báo từ người chơi:</h3>
+                        <h3>🔔 Thông báo từ người chơi</h3>
                         <div id="notification-list" class="notification-list"></div>
                     </div>
 
+                    <!-- Lịch sử các số đã quay -->
                     <div class="drawn-numbers">
-                        <h3>Lịch sử các số đã quay:</h3>
+                        <h3>📋 Lịch sử các số đã quay</h3>
                         <div id="drawn-list" class="number-grid"></div>
                     </div>
                 </div>
@@ -85,41 +97,53 @@
         <!-- Chế độ Người chơi -->
         <div id="player-mode" class="game-mode" style="display: none;">
             <div class="mode-header">
-                <h2>🎮 Chế độ Người chơi</h2>
+                <h2>🎫 Tờ Vé Loto Của Bạn</h2>
                 <button class="back-btn" onclick="backToModeSelection()">← Quay lại</button>
             </div>
 
             <div class="player-controls">
-                <div class="card-settings" id="card-settings">
-                    <h3>Tham gia phòng</h3>
-                    <div class="setting-group">
-                        <label>Nhập mã phòng:</label>
-                        <input type="text" id="room-code-input" placeholder="Nhập mã 6 ký tự" maxlength="6" />
+                <div class="waiting-screen" id="waiting-screen">
+                    <div class="waiting-message">
+                        <div class="waiting-icon">⏳</div>
+                        <h3>Chờ quản trò bắt đầu...</h3>
+                        <p>Tờ vé của bạn sẽ hiện ra khi trò chơi bắt đầu</p>
                     </div>
-                    <button class="primary-btn" onclick="joinRoom()">Tham gia phòng</button>
                 </div>
 
                 <div class="player-card" id="player-card" style="display: none;">
-                    <div class="room-info">
-                        <span>Phòng: <strong id="player-room-code">------</strong></span>
-                        <span class="separator">|</span>
-                        <span>Số hiện tại: <strong id="player-current-number">-</strong></span>
+                    <!-- Số hiện tại từ máy quay -->
+                    <div class="current-number-display">
+                        <div class="current-label">Số vừa quay:</div>
+                        <div class="current-value" id="player-current-number">--</div>
                     </div>
 
-                    <div class="card-header">
-                        <h3>Bảng số của bạn</h3>
-                        <div class="card-actions">
-                            <button class="secondary-btn small" onclick="regenerateCard()">Tạo bảng mới</button>
-                            <button class="secondary-btn small" onclick="clearMarks()">Xóa đánh dấu</button>
+                    <!-- Tờ vé loto giấy trắng viền đỏ -->
+                    <div class="loto-paper">
+                        <div class="paper-header">
+                            <div class="paper-title">VÉ SỐ LOTO</div>
+                            <div class="paper-serial">Số: <span id="card-serial"></span></div>
+                        </div>
+
+                        <div id="loto-card" class="loto-card"></div>
+
+                        <div class="paper-footer">
+                            <div class="marked-info">
+                                Đã đánh dấu: <span id="marked-count">0</span> số
+                            </div>
                         </div>
                     </div>
 
-                    <div id="loto-card" class="loto-card"></div>
-
-                    <div class="marked-count">
-                        Đã đánh dấu: <span id="marked-count">0</span> số
+                    <!-- Nút hành động -->
+                    <div class="player-actions">
+                        <button class="action-btn generate-btn" onclick="regenerateCard()">
+                            🔄 Đổi vé mới
+                        </button>
+                        <button class="action-btn clear-btn" onclick="clearMarks()">
+                            ❌ Xóa đánh dấu
+                        </button>
                     </div>
 
+                    <!-- Nút Chờ và Kinh -->
                     <div class="win-buttons">
                         <button class="cho-btn" id="cho-btn" onclick="announceWaiting()">
                             🔔 CHỜ
@@ -133,7 +157,7 @@
         </div>
 
         <footer>
-            <p>Made with ❤️ for friends | <a href="https://github.com" target="_blank">GitHub</a></p>
+            <p>Made with ❤️ for friends</p>
         </footer>
     </div>
 

@@ -5,15 +5,16 @@
 }
 
 :root {
-    --primary-color: #4f46e5;
-    --primary-hover: #4338ca;
-    --secondary-color: #10b981;
-    --danger-color: #ef4444;
+    --primary-color: #dc2626;
+    --primary-hover: #b91c1c;
+    --secondary-color: #16a34a;
     --bg-color: #f8fafc;
     --card-bg: #ffffff;
     --text-primary: #1e293b;
     --text-secondary: #64748b;
     --border-color: #e2e8f0;
+    --red-border: #dc2626;
+    --paper-bg: #fef9f3;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
@@ -89,12 +90,12 @@ header h1 {
 
 .mode-btn.host-btn:hover {
     border-color: var(--primary-color);
-    background: linear-gradient(135deg, #667eea22, #764ba222);
+    background: linear-gradient(135deg, #dc262622, #b91c1c22);
 }
 
 .mode-btn.player-btn:hover {
     border-color: var(--secondary-color);
-    background: linear-gradient(135deg, #10b98122, #059e6922);
+    background: linear-gradient(135deg, #16a34a22, #15803d22);
 }
 
 .mode-btn .icon {
@@ -143,6 +144,8 @@ header h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     display: inline-block;
+    width: 100%;
+    margin-bottom: 10px;
 }
 
 .primary-btn {
@@ -171,11 +174,6 @@ header h1 {
     background: #cbd5e1;
 }
 
-.secondary-btn.small {
-    padding: 8px 16px;
-    font-size: 0.9rem;
-}
-
 .back-btn {
     padding: 10px 20px;
     border: 2px solid var(--border-color);
@@ -190,13 +188,14 @@ header h1 {
     color: var(--primary-color);
 }
 
-/* Host Mode */
+/* ============ HOST MODE - MÁY QUAY SỐ LED ============ */
+
 .host-controls {
     max-width: 800px;
     margin: 0 auto;
 }
 
-.game-settings, .game-active {
+.game-settings {
     background: var(--bg-color);
     padding: 30px;
     border-radius: 15px;
@@ -219,8 +218,7 @@ header h1 {
     color: var(--text-primary);
 }
 
-.setting-group select,
-.setting-group input {
+.setting-group select {
     width: 100%;
     padding: 12px;
     border: 2px solid var(--border-color);
@@ -229,192 +227,263 @@ header h1 {
     background: white;
 }
 
-.setting-group input:focus {
-    outline: none;
-    border-color: var(--primary-color);
+/* Slot Machine - Máy quay số LED */
+.slot-machine {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 40px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    box-shadow:
+        0 0 30px rgba(220, 38, 38, 0.3),
+        inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    border: 5px solid #334155;
 }
 
-.setting-group input::placeholder {
-    color: var(--text-secondary);
+.slot-display {
+    background: #000;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.8);
+    border: 3px solid #1e293b;
 }
 
-.room-code-display {
-    text-align: center;
+.led-frame {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
     margin-bottom: 20px;
+}
+
+.led-number {
+    background: #0a0a0a;
+    border: 4px solid #1e293b;
+    border-radius: 10px;
+    width: 120px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6rem;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    color: #ff0000;
+    text-shadow:
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        0 0 30px #ff0000,
+        0 0 40px #ff0000;
+    position: relative;
+    overflow: hidden;
+}
+
+.led-number::before {
+    content: '88';
+    position: absolute;
+    color: #1a0000;
+    text-shadow: none;
+    z-index: 0;
+}
+
+.led-number {
+    z-index: 1;
+}
+
+.machine-label {
+    text-align: center;
+    color: #fbbf24;
+    font-size: 1.2rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px #fbbf24;
+}
+
+/* Animation lăn số */
+@keyframes rollNumber {
+    0% { transform: translateY(0); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translateY(-20px); opacity: 0; }
+}
+
+.led-number.rolling {
+    animation: rollNumber 0.1s ease-in-out;
+}
+
+/* Game Info */
+.game-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.info-item {
     background: white;
     padding: 20px;
     border-radius: 12px;
+    text-align: center;
     box-shadow: var(--shadow);
 }
 
-.room-code-label {
+.info-label {
+    display: block;
     font-size: 0.9rem;
     color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
-.room-code {
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    letter-spacing: 8px;
-    font-family: 'Courier New', monospace;
-}
-
-.room-code-help {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    margin-top: 8px;
-}
-
-.current-number-display {
-    text-align: center;
-    margin-bottom: 30px;
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: var(--shadow);
-}
-
-.current-number-display .label {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    margin-bottom: 15px;
-}
-
-.current-number {
-    font-size: 6rem;
-    font-weight: bold;
-    color: var(--primary-color);
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    animation: pop 0.3s ease;
-}
-
-@keyframes pop {
-    0% { transform: scale(0.8); opacity: 0; }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-.remaining {
-    font-size: 1.1rem;
-    color: var(--text-secondary);
-    margin-top: 15px;
-}
-
-.remaining span {
+.info-value {
+    display: block;
+    font-size: 2rem;
     font-weight: bold;
     color: var(--primary-color);
 }
 
-.draw-btn {
-    width: 100%;
-    margin-bottom: 15px;
-    background: var(--secondary-color);
-    font-size: 1.3rem;
-    padding: 20px;
-}
+/* ============ PLAYER MODE - TỜ VÉ LOTO ============ */
 
-.draw-btn:hover {
-    background: #059669;
-}
-
-.draw-btn:disabled {
-    background: var(--text-secondary);
-}
-
-.drawn-numbers {
-    margin-top: 30px;
-}
-
-.drawn-numbers h3 {
-    margin-bottom: 20px;
-    color: var(--text-primary);
-}
-
-/* Player Mode */
 .player-controls {
     max-width: 900px;
     margin: 0 auto;
 }
 
-.card-settings {
+/* Waiting Screen */
+.waiting-screen {
     background: var(--bg-color);
-    padding: 30px;
+    padding: 60px 30px;
     border-radius: 15px;
-    margin-bottom: 20px;
-}
-
-.card-settings h3 {
-    margin-bottom: 20px;
-    color: var(--text-primary);
-}
-
-.player-card {
-    background: var(--bg-color);
-    padding: 30px;
-    border-radius: 15px;
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.room-info {
     text-align: center;
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
+}
+
+.waiting-icon {
+    font-size: 5rem;
     margin-bottom: 20px;
-    font-size: 1rem;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.waiting-message h3 {
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.waiting-message p {
     color: var(--text-secondary);
 }
 
-.room-info strong {
-    color: var(--primary-color);
+/* Current Number Display */
+.current-number-display {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.current-label {
+    color: #fbbf24;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.current-value {
+    font-size: 4rem;
     font-weight: bold;
+    color: #ff0000;
+    text-shadow:
+        0 0 10px #ff0000,
+        0 0 20px #ff0000,
+        0 0 30px #ff0000;
+    font-family: 'Courier New', monospace;
 }
 
-.room-info .separator {
-    margin: 0 15px;
-    color: var(--border-color);
+/* Tờ vé loto - Giấy trắng viền đỏ */
+.loto-paper {
+    background: var(--paper-bg);
+    border: 4px solid var(--red-border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow:
+        var(--shadow-lg),
+        inset 0 0 30px rgba(220, 38, 38, 0.05);
+    position: relative;
 }
 
-.card-header h3 {
-    color: var(--text-primary);
+/* Texture giấy */
+.loto-paper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.02) 2px,
+            rgba(0, 0, 0, 0.02) 4px
+        );
+    pointer-events: none;
+    border-radius: 4px;
 }
 
-.card-actions {
+.paper-header {
+    border-bottom: 2px solid var(--red-border);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
     display: flex;
-    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.paper-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--red-border);
+    letter-spacing: 2px;
+}
+
+.paper-serial {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-family: 'Courier New', monospace;
+}
+
+.paper-serial span {
+    font-weight: bold;
+    color: var(--text-primary);
 }
 
 /* Loto Card */
 .loto-card {
     background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
 }
 
 /* 3x9 Grid (90 numbers) */
 .loto-card.grid-90 {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
-    gap: 8px;
+    gap: 6px;
 }
 
 /* 5x5 Grid (75 numbers) */
 .loto-card.grid-75 {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
+    gap: 8px;
 }
 
 .number-cell {
@@ -422,10 +491,10 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: bold;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
+    border: 2px solid var(--red-border);
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
     background: white;
@@ -434,69 +503,76 @@ header h1 {
 
 .number-cell:hover {
     transform: scale(1.05);
-    border-color: var(--primary-color);
+    background: #fef2f2;
 }
 
 .number-cell.marked {
-    background: var(--primary-color);
+    background: var(--red-border);
     color: white;
-    border-color: var(--primary-color);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .number-cell.empty {
     background: transparent;
-    border: none;
+    border: 2px dashed #e5e7eb;
     cursor: default;
 }
 
 .number-cell.empty:hover {
     transform: none;
+    background: transparent;
 }
 
-/* Number Grid for History */
-.number-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-    gap: 8px;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-}
-
-.number-item {
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    background: var(--primary-color);
-    color: white;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.number-item.latest {
-    background: var(--secondary-color);
-    animation: pulse 0.5s ease;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.marked-count {
+.paper-footer {
+    border-top: 2px solid var(--red-border);
+    padding-top: 15px;
     text-align: center;
-    font-size: 1.2rem;
+}
+
+.marked-info {
+    font-size: 1.1rem;
     color: var(--text-secondary);
     font-weight: 600;
-    margin-bottom: 20px;
 }
 
-.marked-count span {
-    color: var(--primary-color);
+.marked-info span {
+    color: var(--red-border);
     font-weight: bold;
+    font-size: 1.3rem;
+}
+
+/* Player Actions */
+.player-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.action-btn {
+    padding: 12px 20px;
+    border: 2px solid var(--border-color);
+    background: white;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.generate-btn:hover {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+.clear-btn:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-secondary);
 }
 
 /* Win Buttons */
@@ -504,7 +580,6 @@ header h1 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
-    margin-top: 20px;
 }
 
 .cho-btn, .kinh-btn {
@@ -530,12 +605,12 @@ header h1 {
 }
 
 .kinh-btn {
-    background: linear-gradient(135deg, #10b981, #059669);
+    background: linear-gradient(135deg, #16a34a, #15803d);
     color: white;
 }
 
 .kinh-btn:hover {
-    background: linear-gradient(135deg, #059669, #047857);
+    background: linear-gradient(135deg, #15803d, #166534);
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
 }
@@ -544,7 +619,7 @@ header h1 {
     transform: scale(0.95);
 }
 
-/* Notifications for Host */
+/* Notifications */
 .notifications {
     background: white;
     padding: 20px;
@@ -594,16 +669,49 @@ header h1 {
 .notification-item.kinh {
     background: linear-gradient(135deg, #d1fae5, #a7f3d0);
     color: #065f46;
-    border-left: 4px solid #10b981;
+    border-left: 4px solid #16a34a;
 }
 
-.notification-item .player-name {
-    font-size: 1.1rem;
+/* Drawn Numbers History */
+.drawn-numbers {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
 }
 
-.notification-item .timestamp {
-    font-size: 0.85rem;
-    opacity: 0.7;
+.drawn-numbers h3 {
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.number-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 8px;
+}
+
+.number-item {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.number-item.latest {
+    background: var(--secondary-color);
+    animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 /* Footer */
@@ -614,73 +722,36 @@ footer {
     color: white;
 }
 
-footer a {
-    color: white;
-    text-decoration: underline;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
     header h1 {
         font-size: 2rem;
     }
 
-    .subtitle {
-        font-size: 1rem;
-    }
-
-    .mode-selection {
-        padding: 20px;
-    }
-
-    .mode-buttons {
-        grid-template-columns: 1fr;
-    }
-
-    .game-mode {
-        padding: 15px;
-    }
-
-    .mode-header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
-    }
-
-    .current-number {
+    .led-number {
+        width: 80px;
+        height: 120px;
         font-size: 4rem;
+    }
+
+    .current-value {
+        font-size: 3rem;
     }
 
     .number-cell {
         font-size: 1rem;
     }
 
-    .card-header {
-        flex-direction: column;
-        align-items: flex-start;
+    .paper-title {
+        font-size: 1.2rem;
     }
 
-    .card-actions {
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .secondary-btn.small {
-        width: 100%;
+    .player-actions {
+        grid-template-columns: 1fr;
     }
 
     .win-buttons {
-        gap: 10px;
-    }
-
-    .cho-btn, .kinh-btn {
-        font-size: 1.1rem;
-        padding: 15px;
-    }
-
-    .room-code {
-        font-size: 2rem;
-        letter-spacing: 4px;
+        grid-template-columns: 1fr;
     }
 }
 
@@ -689,20 +760,29 @@ footer a {
         padding: 10px;
     }
 
-    header h1 {
-        font-size: 1.5rem;
+    .slot-machine {
+        padding: 20px;
     }
 
-    .current-number {
+    .led-number {
+        width: 60px;
+        height: 90px;
         font-size: 3rem;
     }
 
-    .loto-card.grid-90 {
-        gap: 4px;
-        padding: 10px;
+    .led-frame {
+        gap: 8px;
+    }
+
+    .current-value {
+        font-size: 2.5rem;
     }
 
     .number-cell {
         font-size: 0.9rem;
+    }
+
+    .loto-card.grid-90 {
+        gap: 4px;
     }
 }
