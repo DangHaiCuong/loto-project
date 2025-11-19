@@ -1,125 +1,260 @@
-# 🎲 Loto Cho Hội Bạn
+# 🎲 Loto Cho Hội Bạn - Realtime Edition
 
-Trang web chơi loto đơn giản cho nhóm bạn, không cần ứng dụng phức tạp. Hoàn toàn chạy trên trình duyệt (static), có thể deploy dễ dàng lên GitHub Pages.
+Trang web chơi loto realtime cho nhóm bạn! Host quay số tự động hiện lên màn hình tất cả người chơi. Hoàn toàn chạy trên trình duyệt với Firebase, không cần backend phức tạp.
 
-## ✨ Tính năng
+## ✨ Tính năng mới - Realtime!
 
 ### 🎯 Chế độ Host (Quản trò)
+- Tạo phòng chơi với mã 6 ký tự
 - Quay số ngẫu nhiên từ 1-90 (hoặc 1-75)
-- Hiển thị số vừa quay lớn và rõ ràng
+- **Số tự động đồng bộ đến tất cả người chơi**
 - Lịch sử các số đã quay
-- Đếm số lượng số còn lại
 - Phím tắt: Nhấn `Space` để quay số
 
 ### 🎮 Chế độ Người chơi
-- Tự động sinh bảng số ngẫu nhiên
+- Tham gia phòng bằng mã 6 ký tự
+- **Nhận số realtime từ Host**
+- Màn hình nhấp nháy khi có số trên bảng
+- Tự động sinh bảng số theo phòng
 - Hai loại bảng:
-  - **Bảng 3×9 (1-90)**: Loto kiểu Ý/Tombola truyền thống
-  - **Bảng 5×5 (1-75)**: Bingo kiểu Mỹ (có ô FREE ở giữa)
-- Đánh dấu số bằng cách click vào ô
-- Xóa đánh dấu nếu cần
-- Tạo bảng mới bất cứ lúc nào
+  - **Bảng 3×9 (1-90)**: Loto kiểu Ý/Tombola
+  - **Bảng 5×5 (1-75)**: Bingo kiểu Mỹ (có ô FREE)
+- Đánh dấu số bằng cách click
 
-## 🚀 Cách sử dụng
+## 🚀 Cách setup - Bắt buộc!
 
-### Chơi trực tiếp
-1. Mở file `index.html` bằng trình duyệt
-2. **Host**: Chọn chế độ "Host", cài đặt số lượng số, bấm "Bắt đầu chơi"
-3. **Người chơi**: Chọn chế độ "Người chơi", chọn loại bảng, bấm "Tạo bảng số"
-4. Host share màn hình hoặc đọc số to cho mọi người
-5. Người chơi đánh dấu số trên bảng của mình
+### Bước 1: Tạo Firebase Project
 
-### Deploy lên GitHub Pages
-1. Tạo repository mới trên GitHub
-2. Upload tất cả files vào repository
-3. Vào Settings → Pages
-4. Chọn branch `main` (hoặc `master`) và folder `/root`
-5. Lưu và đợi vài phút
-6. Truy cập trang web qua link: `https://username.github.io/repo-name/`
+1. Truy cập [Firebase Console](https://console.firebase.google.com/)
+2. Click **Add project** (Thêm dự án)
+3. Đặt tên project (ví dụ: `loto-project`)
+4. Tắt Google Analytics (không cần thiết)
+5. Click **Create project**
 
-### Deploy lên Netlify/Vercel
-1. Kéo thả toàn bộ thư mục vào Netlify Drop hoặc import repo từ GitHub
-2. Trang web sẽ được deploy tự động
-3. Nhận link công khai để chia sẻ
+### Bước 2: Tạo Realtime Database
+
+1. Trong Firebase Console, vào **Build** → **Realtime Database**
+2. Click **Create Database**
+3. Chọn location gần bạn nhất (ví dụ: `asia-southeast1`)
+4. Chọn **Start in test mode** (để dễ setup)
+5. Click **Enable**
+
+### Bước 3: Cấu hình Security Rules
+
+Trong Realtime Database, vào tab **Rules** và paste:
+
+```json
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        ".indexOn": ["createdAt"]
+      }
+    }
+  }
+}
+```
+
+Click **Publish**
+
+### Bước 4: Lấy Firebase Config
+
+1. Vào **Project settings** (icon ⚙️)
+2. Kéo xuống phần **Your apps**
+3. Click icon **Web** (`</>`)
+4. Đặt tên app (ví dụ: `Loto Web`)
+5. **KHÔNG** check "Firebase Hosting"
+6. Click **Register app**
+7. Copy đoạn config (phần `firebaseConfig`)
+
+### Bước 5: Cập nhật file `index.html`
+
+Mở file `index.html`, tìm dòng 131-140:
+
+```javascript
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+```
+
+Thay thế bằng config bạn vừa copy từ Firebase.
+
+**Ví dụ:**
+```javascript
+const firebaseConfig = {
+    apiKey: "AIzaSyBxxx...",
+    authDomain: "loto-project-xxxxx.firebaseapp.com",
+    databaseURL: "https://loto-project-xxxxx-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "loto-project-xxxxx",
+    storageBucket: "loto-project-xxxxx.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:xxxxx"
+};
+```
+
+### Bước 6: Deploy và sử dụng
+
+#### Deploy lên GitHub Pages:
+1. Push code lên GitHub
+2. Vào Settings → Pages
+3. Chọn branch `main`, folder `/root`
+4. Lưu và truy cập link: `https://username.github.io/repo-name/`
+
+#### Deploy lên Netlify/Vercel:
+1. Kéo thả thư mục vào trang web
+2. Tự động deploy
+3. Nhận link công khai
+
+## 🎮 Cách chơi
+
+1. **Host**:
+   - Mở trang → Chọn "Host"
+   - Chọn loại (75 hoặc 90 số)
+   - Click "Tạo phòng và bắt đầu"
+   - Chia sẻ mã phòng 6 ký tự cho người chơi
+   - Nhấn "Quay số tiếp" hoặc phím `Space`
+
+2. **Người chơi**:
+   - Mở trang → Chọn "Người chơi"
+   - Nhập mã phòng từ Host
+   - Click "Tham gia phòng"
+   - Bảng số tự động sinh ra
+   - Khi Host quay số, màn hình sẽ nhấp nháy nếu có số trên bảng
+   - Click vào số để đánh dấu
+
+## 📊 Giới hạn Firebase Free Tier
+
+- ✅ Đồng thời: ~100 người chơi
+- ✅ Bandwidth: 10GB/tháng (dư dùng cho nhóm bạn)
+- ✅ Storage: 1GB (chỉ lưu phòng chơi)
+- ✅ Hoàn toàn miễn phí cho hội bạn
+
+## 🔧 Tùy chỉnh nâng cao
+
+### Bật tự động đánh dấu
+
+Mở file `script.js`, tìm dòng 276-281:
+
+```javascript
+function autoMarkNumber(number) {
+    if (gameState.playerCard.includes(number) && !gameState.markedNumbers.includes(number)) {
+        // Uncomment to enable auto-mark
+        // toggleMark(number);
+    }
+}
+```
+
+Bỏ comment dòng `// toggleMark(number);` để tự động đánh dấu số.
+
+### Thay đổi màu sắc
+
+Mở `style.css`, chỉnh biến CSS:
+
+```css
+:root {
+    --primary-color: #4f46e5;  /* Màu chủ đạo */
+    --secondary-color: #10b981; /* Màu phụ */
+}
+```
 
 ## 📁 Cấu trúc dự án
 
 ```
 loto-project/
 │
-├── index.html          # File HTML chính
-├── style.css           # CSS styling
-├── script.js           # JavaScript logic
-└── README.md           # Hướng dẫn sử dụng
+├── index.html          # File HTML với Firebase SDK
+├── style.css           # CSS styling (với styles mới)
+├── script.js           # JavaScript logic (realtime)
+└── README.md           # File này
 ```
 
-## 🎯 Cách chơi Loto
+## 🛡️ Bảo mật
 
-### Luật cơ bản
-1. Mỗi người chơi có một bảng số
-2. Host quay số ngẫu nhiên và đọc to
-3. Người chơi đánh dấu số trên bảng của mình nếu có
-4. Người nào hoàn thành một dãy/hàng/bảng đầu tiên sẽ thắng
+Với setup hiện tại, database ở chế độ test (ai cũng đọc/ghi được). Điều này OK cho nhóm bạn nhưng:
 
-### Các kiểu thắng phổ biến
-- **Một dòng**: Hoàn thành một hàng ngang
-- **Hai dòng**: Hoàn thành hai hàng ngang
-- **Full house**: Đánh dấu được tất cả số trên bảng
+### Nâng cấp bảo mật (optional):
 
-## 🛠️ Tùy chỉnh
+Thay rules bằng:
 
-### Thay đổi phạm vi số
-Mở file `index.html`, tìm phần `<select id="number-range">` và thêm option mới:
-
-```html
-<option value="100">100 số</option>
-```
-
-### Thay đổi màu sắc
-Mở file `style.css`, tìm phần `:root` và chỉnh sửa các biến CSS:
-
-```css
-:root {
-    --primary-color: #4f46e5;  /* Màu chủ đạo */
-    --secondary-color: #10b981; /* Màu phụ */
-    /* ... */
+```json
+{
+  "rules": {
+    "rooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": "!data.exists() || data.child('createdAt').val() > (now - 86400000)",
+        ".indexOn": ["createdAt"]
+      }
+    }
+  }
 }
 ```
 
-## 📱 Responsive
+Rules này:
+- Cho phép đọc phòng (`.read: true`)
+- Chỉ cho phép tạo phòng mới hoặc cập nhật phòng < 24h
+- Tự động xóa phòng cũ sau 24h
 
-Trang web hoạt động tốt trên:
-- 💻 Desktop
-- 📱 Mobile
-- 📲 Tablet
+### Dọn dẹp phòng cũ tự động
 
-## 🤝 Đóng góp
+Firebase không tự động xóa data. Để tránh tốn storage, bạn có thể:
 
-Nếu bạn muốn thêm tính năng hoặc sửa lỗi:
-1. Fork repository
-2. Tạo branch mới: `git checkout -b feature/ten-tinh-nang`
-3. Commit changes: `git commit -m 'Thêm tính năng XYZ'`
-4. Push lên branch: `git push origin feature/ten-tinh-nang`
-5. Tạo Pull Request
+1. Vào Firebase Console → Realtime Database
+2. Xóa thủ công các phòng trong mục `/rooms`
+
+Hoặc viết Cloud Function (nâng cao, cần upgrade Firebase plan).
+
+## 🆚 So sánh phiên bản
+
+| Tính năng | Offline | Realtime (Firebase) |
+|-----------|---------|---------------------|
+| Host quay số | ✅ | ✅ |
+| Người chơi nhận bảng | ✅ | ✅ |
+| Đồng bộ tự động | ❌ Share màn hình | ✅ Realtime |
+| Số người chơi | Không giới hạn | ~100 (free tier) |
+| Setup | Không cần | Cần Firebase |
+| Chi phí | Miễn phí | Miễn phí (free tier) |
+
+## ❓ Troubleshooting
+
+### Lỗi: "Firebase chưa được cấu hình"
+→ Bạn chưa thay `YOUR_API_KEY` trong `index.html` bằng config thật.
+
+### Lỗi: "Permission denied"
+→ Kiểm tra Security Rules trong Firebase Console.
+
+### Lỗi: "Room không tồn tại"
+→ Phòng đã bị xóa hoặc mã sai. Host tạo phòng mới.
+
+### Số không đồng bộ
+→ Kiểm tra internet, refresh trang.
+
+## 🎉 Tính năng có thể phát triển thêm
+
+- [ ] Âm thanh khi quay số
+- [ ] Chế độ tự động quay số (mỗi 5s)
+- [ ] Thông báo khi người chơi thắng
+- [ ] Lưu lịch sử game
+- [ ] Nhiều phòng cùng lúc
+- [ ] Chat trong phòng
+- [ ] Xác thực Host bằng password
 
 ## 📝 License
 
 MIT License - Tự do sử dụng cho mục đích cá nhân và thương mại.
 
-## 🎉 Tính năng có thể phát triển thêm
+## 💡 Được tạo bởi
 
-- [ ] Âm thanh khi quay số
-- [ ] Chế độ tự động quay số
-- [ ] Lưu lịch sử game
-- [ ] Chế độ multiplayer online (cần backend)
-- [ ] Thống kê số hay ra
-- [ ] Theme tối/sáng
-- [ ] Nhiều ngôn ngữ
-
-## 💡 Ý tưởng từ
-
-Loto/Tombola/Bingo - trò chơi truyền thống được yêu thích trên toàn thế giới!
+Made with ❤️ for friends | Powered by Firebase
 
 ---
 
-Made with ❤️ for friends
+**Lưu ý quan trọng:** Nhớ setup Firebase trước khi sử dụng! Không có Firebase, trang web sẽ hoạt động ở chế độ offline (không realtime).

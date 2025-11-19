@@ -219,13 +219,52 @@ header h1 {
     color: var(--text-primary);
 }
 
-.setting-group select {
+.setting-group select,
+.setting-group input {
     width: 100%;
     padding: 12px;
     border: 2px solid var(--border-color);
     border-radius: 8px;
     font-size: 1rem;
     background: white;
+}
+
+.setting-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.setting-group input::placeholder {
+    color: var(--text-secondary);
+}
+
+.room-code-display {
+    text-align: center;
+    margin-bottom: 20px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.room-code-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.room-code {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    letter-spacing: 8px;
+    font-family: 'Courier New', monospace;
+}
+
+.room-code-help {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 8px;
 }
 
 .current-number-display {
@@ -324,6 +363,26 @@ header h1 {
     margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 15px;
+}
+
+.room-info {
+    text-align: center;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.room-info strong {
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.room-info .separator {
+    margin: 0 15px;
+    color: var(--border-color);
 }
 
 .card-header h3 {

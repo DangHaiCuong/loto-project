@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>🎲 Loto Cho Hội Bạn</h1>
-            <p class="subtitle">Chơi loto cùng nhau, không cần app phức tạp!</p>
+            <p class="subtitle">Chơi loto cùng nhau - Realtime!</p>
         </header>
 
         <!-- Chọn chế độ -->
@@ -20,12 +20,12 @@
                 <button class="mode-btn host-btn" onclick="selectMode('host')">
                     <span class="icon">🎯</span>
                     <span class="text">Host (Quản trò)</span>
-                    <span class="desc">Quay số và điều khiển trò chơi</span>
+                    <span class="desc">Tạo phòng và quay số</span>
                 </button>
                 <button class="mode-btn player-btn" onclick="selectMode('player')">
                     <span class="icon">🎮</span>
                     <span class="text">Người chơi</span>
-                    <span class="desc">Nhận bảng số và đánh dấu</span>
+                    <span class="desc">Tham gia phòng với mã</span>
                 </button>
             </div>
         </div>
@@ -39,7 +39,7 @@
 
             <div class="host-controls">
                 <div class="game-settings" id="game-settings">
-                    <h3>Cài đặt trò chơi</h3>
+                    <h3>Tạo phòng chơi</h3>
                     <div class="setting-group">
                         <label>Số lượng số (từ 1 đến):</label>
                         <select id="number-range">
@@ -47,10 +47,16 @@
                             <option value="90" selected>90 (Kiểu Ý)</option>
                         </select>
                     </div>
-                    <button class="primary-btn" onclick="startGame()">Bắt đầu chơi</button>
+                    <button class="primary-btn" onclick="startGame()">Tạo phòng và bắt đầu</button>
                 </div>
 
                 <div class="game-active" id="game-active" style="display: none;">
+                    <div class="room-code-display">
+                        <div class="room-code-label">Mã phòng:</div>
+                        <div class="room-code" id="room-code">------</div>
+                        <div class="room-code-help">Chia sẻ mã này cho người chơi</div>
+                    </div>
+
                     <div class="current-number-display">
                         <div class="label">Số vừa quay:</div>
                         <div class="current-number" id="current-number">-</div>
@@ -80,22 +86,25 @@
 
             <div class="player-controls">
                 <div class="card-settings" id="card-settings">
-                    <h3>Tạo bảng số của bạn</h3>
+                    <h3>Tham gia phòng</h3>
                     <div class="setting-group">
-                        <label>Loại bảng:</label>
-                        <select id="card-type">
-                            <option value="75">Bảng 5×5 (1-75)</option>
-                            <option value="90" selected>Bảng 3×9 (1-90)</option>
-                        </select>
+                        <label>Nhập mã phòng:</label>
+                        <input type="text" id="room-code-input" placeholder="Nhập mã 6 ký tự" maxlength="6" />
                     </div>
-                    <button class="primary-btn" onclick="generateCard()">Tạo bảng số</button>
+                    <button class="primary-btn" onclick="joinRoom()">Tham gia phòng</button>
                 </div>
 
                 <div class="player-card" id="player-card" style="display: none;">
+                    <div class="room-info">
+                        <span>Phòng: <strong id="player-room-code">------</strong></span>
+                        <span class="separator">|</span>
+                        <span>Số hiện tại: <strong id="player-current-number">-</strong></span>
+                    </div>
+
                     <div class="card-header">
                         <h3>Bảng số của bạn</h3>
                         <div class="card-actions">
-                            <button class="secondary-btn small" onclick="generateCard()">Tạo bảng mới</button>
+                            <button class="secondary-btn small" onclick="regenerateCard()">Tạo bảng mới</button>
                             <button class="secondary-btn small" onclick="clearMarks()">Xóa đánh dấu</button>
                         </div>
                     </div>
@@ -114,6 +123,35 @@
         </footer>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue, update, push, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Firebase configuration - REPLACE WITH YOUR CONFIG
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Make Firebase available globally
+        window.firebaseDB = database;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseOnValue = onValue;
+        window.firebaseUpdate = update;
+        window.firebasePush = push;
+        window.firebaseRemove = remove;
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

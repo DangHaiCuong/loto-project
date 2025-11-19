@@ -1,14 +1,36 @@
 // Game state
 let gameState = {
     mode: null, // 'host' or 'player'
+    roomCode: null,
     numberRange: 90,
     availableNumbers: [],
     drawnNumbers: [],
     playerCard: [],
-    markedNumbers: []
+    markedNumbers: [],
+    firebaseListener: null
 };
 
-// Mode Selection
+// ============ FIREBASE HELPERS ============
+
+function generateRoomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude confusing chars
+    let code = '';
+    for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+function checkFirebaseReady() {
+    if (!window.firebaseDB) {
+        alert('⚠️ Firebase chưa được cấu hình!\n\nVui lòng xem README.md để biết cách setup Firebase.');
+        return false;
+    }
+    return true;
+}
+
+// ============ MODE SELECTION ============
+
 function selectMode(mode) {
     gameState.mode = mode;
     document.getElementById('mode-selection').style.display = 'none';
@@ -21,14 +43,27 @@ function selectMode(mode) {
 }
 
 function backToModeSelection() {
+    // Clean up Firebase listener
+    if (gameState.firebaseListener) {
+        gameState.firebaseListener();
+    }
+
+    // Delete room if host
+    if (gameState.mode === 'host' && gameState.roomCode && window.firebaseDB) {
+        const roomRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}`);
+        window.firebaseRemove(roomRef);
+    }
+
     // Reset game state
     gameState = {
         mode: null,
+        roomCode: null,
         numberRange: 90,
         availableNumbers: [],
         drawnNumbers: [],
         playerCard: [],
-        markedNumbers: []
+        markedNumbers: [],
+        firebaseListener: null
     };
 
     // Hide all modes
@@ -48,15 +83,19 @@ function backToModeSelection() {
     document.getElementById('card-settings').style.display = 'block';
     document.getElementById('player-card').style.display = 'none';
     document.getElementById('loto-card').innerHTML = '';
+    document.getElementById('room-code-input').value = '';
 }
 
 // ============ HOST MODE ============
 
 function startGame() {
+    if (!checkFirebaseReady()) return;
+
     const range = parseInt(document.getElementById('number-range').value);
     gameState.numberRange = range;
     gameState.availableNumbers = [];
     gameState.drawnNumbers = [];
+    gameState.roomCode = generateRoomCode();
 
     // Create array of numbers from 1 to range
     for (let i = 1; i <= range; i++) {
@@ -66,9 +105,20 @@ function startGame() {
     // Shuffle the numbers
     shuffleArray(gameState.availableNumbers);
 
+    // Create room in Firebase
+    const roomRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}`);
+    window.firebaseSet(roomRef, {
+        numberRange: range,
+        currentNumber: null,
+        drawnNumbers: [],
+        createdAt: Date.now(),
+        status: 'active'
+    });
+
     // Show game active screen
     document.getElementById('game-settings').style.display = 'none';
     document.getElementById('game-active').style.display = 'block';
+    document.getElementById('room-code').textContent = gameState.roomCode;
     document.getElementById('remaining-count').textContent = gameState.availableNumbers.length;
     document.getElementById('current-number').textContent = '-';
     document.getElementById('drawn-list').innerHTML = '';
@@ -83,6 +133,14 @@ function drawNumber() {
     // Draw the next number
     const number = gameState.availableNumbers.shift();
     gameState.drawnNumbers.push(number);
+
+    // Update Firebase
+    const roomRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}`);
+    window.firebaseUpdate(roomRef, {
+        currentNumber: number,
+        drawnNumbers: gameState.drawnNumbers,
+        lastUpdate: Date.now()
+    });
 
     // Update display
     document.getElementById('current-number').textContent = number;
@@ -118,10 +176,18 @@ function updateDrawnNumbersList() {
 
 function resetGame() {
     if (confirm('Bạn có chắc muốn chơi lại từ đầu?')) {
+        // Delete old room
+        if (gameState.roomCode && window.firebaseDB) {
+            const roomRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}`);
+            window.firebaseRemove(roomRef);
+        }
+
+        // Reset
         document.getElementById('game-settings').style.display = 'block';
         document.getElementById('game-active').style.display = 'none';
         gameState.availableNumbers = [];
         gameState.drawnNumbers = [];
+        gameState.roomCode = null;
         document.getElementById('draw-btn').disabled = false;
         document.getElementById('draw-btn').textContent = 'Quay số tiếp';
     }
@@ -129,21 +195,108 @@ function resetGame() {
 
 // ============ PLAYER MODE ============
 
-function generateCard() {
-    const cardType = parseInt(document.getElementById('card-type').value);
-    gameState.numberRange = cardType;
+function joinRoom() {
+    if (!checkFirebaseReady()) return;
+
+    const roomCode = document.getElementById('room-code-input').value.trim().toUpperCase();
+
+    if (roomCode.length !== 6) {
+        alert('Vui lòng nhập mã phòng gồm 6 ký tự!');
+        return;
+    }
+
+    // Check if room exists
+    const roomRef = window.firebaseRef(window.firebaseDB, `rooms/${roomCode}`);
+    window.firebaseOnValue(roomRef, (snapshot) => {
+        const roomData = snapshot.val();
+
+        if (!roomData || roomData.status !== 'active') {
+            alert('Phòng không tồn tại hoặc đã kết thúc!');
+            return;
+        }
+
+        // Join room
+        gameState.roomCode = roomCode;
+        gameState.numberRange = roomData.numberRange;
+
+        // Generate player card
+        generateCardForRoom();
+
+        // Listen to room updates
+        listenToRoomUpdates();
+
+        // Show player card
+        document.getElementById('card-settings').style.display = 'none';
+        document.getElementById('player-card').style.display = 'block';
+        document.getElementById('player-room-code').textContent = roomCode;
+        document.getElementById('player-current-number').textContent = roomData.currentNumber || '-';
+
+    }, { onlyOnce: true });
+}
+
+function listenToRoomUpdates() {
+    const roomRef = window.firebaseRef(window.firebaseDB, `rooms/${gameState.roomCode}`);
+
+    gameState.firebaseListener = window.firebaseOnValue(roomRef, (snapshot) => {
+        const roomData = snapshot.val();
+
+        if (!roomData) {
+            alert('Phòng đã bị xóa hoặc kết thúc!');
+            backToModeSelection();
+            return;
+        }
+
+        // Update current number display
+        if (roomData.currentNumber) {
+            document.getElementById('player-current-number').textContent = roomData.currentNumber;
+
+            // Show notification
+            showNumberNotification(roomData.currentNumber);
+
+            // Auto-mark if number is on player's card
+            autoMarkNumber(roomData.currentNumber);
+        }
+    });
+}
+
+function showNumberNotification(number) {
+    // Check if number is on player's card
+    const hasNumber = gameState.playerCard.includes(number);
+
+    if (hasNumber) {
+        // Flash the screen or show notification
+        const body = document.body;
+        body.style.backgroundColor = '#10b981';
+        setTimeout(() => {
+            body.style.backgroundColor = '';
+        }, 300);
+    }
+}
+
+function autoMarkNumber(number) {
+    // Optional: Automatically mark the number if it's on the card
+    if (gameState.playerCard.includes(number) && !gameState.markedNumbers.includes(number)) {
+        // Uncomment to enable auto-mark
+        // toggleMark(number);
+    }
+}
+
+function generateCardForRoom() {
     gameState.markedNumbers = [];
 
-    if (cardType === 90) {
+    if (gameState.numberRange === 90) {
         generateCard90();
-    } else if (cardType === 75) {
+    } else if (gameState.numberRange === 75) {
         generateCard75();
     }
 
-    // Show player card
-    document.getElementById('card-settings').style.display = 'none';
-    document.getElementById('player-card').style.display = 'block';
     updateMarkedCount();
+}
+
+function regenerateCard() {
+    if (confirm('Tạo bảng mới? Bạn sẽ mất các đánh dấu hiện tại.')) {
+        generateCardForRoom();
+    }
 }
 
 function generateCard90() {
